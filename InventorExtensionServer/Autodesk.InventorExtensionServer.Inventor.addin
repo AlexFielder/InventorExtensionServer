@@ -1,0 +1,14 @@
+<Addin Type="Standard">
+  <!--Created for Autodesk Inventor Version 23.0-->
+  <ClassId>{3bb5811b-0cf1-4253-8971-08e392acc02d}</ClassId>
+  <ClientId>{3bb5811b-0cf1-4253-8971-08e392acc02d}</ClientId>
+  <DisplayName>InventorExtensionServer</DisplayName>
+  <Description>InventorExtensionServer</Description>
+  <Assembly>InventorExtensionServer.dll</Assembly>
+  <LoadOnStartUp>1</LoadOnStartUp>
+  <UserUnloadable>1</UserUnloadable>
+  <Hidden>0</Hidden>
+  <SupportedSoftwareVersionGreaterThan>22..</SupportedSoftwareVersionGreaterThan>
+  <DataVersion>1</DataVersion>
+  <UserInterfaceVersion>1</UserInterfaceVersion>
+</Addin>
