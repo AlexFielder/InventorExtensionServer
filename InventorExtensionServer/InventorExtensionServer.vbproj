@@ -95,7 +95,7 @@
     <None Include="InventorExtensionServer.X.manifest" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Autodesk.InventorExtensionServer.Inventor.addin" />
+    <None Include="InventorExtensionServer.Inventor.addin" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Readme.txt" />
