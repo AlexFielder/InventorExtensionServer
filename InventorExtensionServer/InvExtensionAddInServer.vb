@@ -90,10 +90,10 @@ Namespace InventorExtensionServer
             '** Sample to illustrate creating a button on a new panel of the Tools tab of the Part ribbon.
 
             '' Get the part ribbon.
-            Dim partRibbon As Ribbon = g_inventorApplication.UserInterfaceManager.Ribbons.Item("Part")
+            Dim partRibbon As Ribbon = g_inventorApplication.UserInterfaceManager.Ribbons.Item("Part") 'possible options here are: ZeroDoc, Part, Assembly, Drawing, Presentation
 
             '' Get the "Tools" tab.
-            Dim toolsTab As RibbonTab = partRibbon.RibbonTabs.Item("id_TabTools")
+            Dim toolsTab As RibbonTab = partRibbon.RibbonTabs.Item("id_TabTools") ' we know this is the ribbontab we're after. To generate a list of all 'internal' names refer to this: https://github.com/AlexFielder/iLogic/blob/master/PrintRibbonNames.bas (Import into the default.ivb inside of Inventor vba and run PrintRibbon() Command)
 
             '' Create a new panel.
             Dim customPanel As RibbonPanel = toolsTab.RibbonPanels.Add("Sample", "MysSample", AddInClientID)
