@@ -9,7 +9,7 @@ Namespace InventorExtensionServer
         Implements Inventor.ApplicationAddInServer
 
         Private WithEvents m_uiEvents As UserInterfaceEvents
-        'Private WithEvents m_sampleButton As ButtonDefinition
+        Private WithEvents m_sampleButton As ButtonDefinition
 
 #Region "ApplicationAddInServer Members"
 
@@ -26,10 +26,24 @@ Namespace InventorExtensionServer
             ' TODO: Add button definitions.
 
             ' Sample to illustrate creating a button definition.
-            'Dim largeIcon As stdole.IPictureDisp = PictureDispConverter.ToIPictureDisp(My.Resources.YourBigImage)
-            'Dim smallIcon As stdole.IPictureDisp = PictureDispConverter.ToIPictureDisp(My.Resources.YourSmallImage)
-            'Dim controlDefs As Inventor.ControlDefinitions = g_inventorApplication.CommandManager.ControlDefinitions
-            'm_sampleButton = controlDefs.AddButtonDefinition("Command Name", "Internal Name", CommandTypesEnum.kShapeEditCmdType, AddInClientID)
+            Dim largeIcon As stdole.IPictureDisp = PictureDispConverter.ToIPictureDisp(My.Resources.IconLarge)
+            Dim smallIcon As stdole.IPictureDisp = PictureDispConverter.ToIPictureDisp(My.Resources.IconSmall)
+            Dim controlDefs As Inventor.ControlDefinitions = g_inventorApplication.CommandManager.ControlDefinitions
+            m_sampleButton = controlDefs.AddButtonDefinition("Command Name",
+                                                             "Internal Name",
+                                                             CommandTypesEnum.kShapeEditCmdType,
+                                                             AddInClientID,
+                                                             "This is a basic Hello World command!",
+                                                             "This is a basic Hello World command!",
+                                                             smallIcon,
+                                                             largeIcon, ButtonDisplayEnum.kAlwaysDisplayText)
+
+            m_sampleButton.ProgressiveToolTip.Description = "This is a basic Hello World command!"
+            m_sampleButton.ProgressiveToolTip.ExpandedDescription = "This is the progressive tooltip for our new command. Change this description as necessary!"
+            m_sampleButton.ProgressiveToolTip.IsProgressive = True
+            m_sampleButton.ProgressiveToolTip.Image = PictureDispConverter.ToIPictureDisp(My.Resources.RibbonProgressiveToolTipImage)
+            m_sampleButton.ProgressiveToolTip.Title = "This is fine."
+
 
             ' Add to the user interface, if it's the first time.
             If firstTime Then
@@ -76,16 +90,16 @@ Namespace InventorExtensionServer
             '** Sample to illustrate creating a button on a new panel of the Tools tab of the Part ribbon.
 
             '' Get the part ribbon.
-            'Dim partRibbon As Ribbon = g_inventorApplication.UserInterfaceManager.Ribbons.Item("Part")
+            Dim partRibbon As Ribbon = g_inventorApplication.UserInterfaceManager.Ribbons.Item("Part")
 
             '' Get the "Tools" tab.
-            'Dim toolsTab As RibbonTab = partRibbon.RibbonTabs.Item("id_TabTools")
+            Dim toolsTab As RibbonTab = partRibbon.RibbonTabs.Item("id_TabTools")
 
             '' Create a new panel.
-            'Dim customPanel As RibbonPanel = toolsTab.RibbonPanels.Add("Sample", "MysSample", AddInClientID)
+            Dim customPanel As RibbonPanel = toolsTab.RibbonPanels.Add("Sample", "MysSample", AddInClientID)
 
             '' Add a button.
-            'customPanel.CommandControls.AddButton(m_sampleButton)
+            customPanel.CommandControls.AddButton(m_sampleButton, True, True)
         End Sub
 
         Private Sub m_uiEvents_OnResetRibbonInterface(Context As NameValueMap) Handles m_uiEvents.OnResetRibbonInterface
@@ -94,9 +108,9 @@ Namespace InventorExtensionServer
         End Sub
 
         ' Sample handler for the button.
-        'Private Sub m_sampleButton_OnExecute(Context As NameValueMap) Handles m_sampleButton.OnExecute
-        '    MsgBox("Button was clicked.")
-        'End Sub
+        Private Sub m_sampleButton_OnExecute(Context As NameValueMap) Handles m_sampleButton.OnExecute
+            MsgBox("Hello World!")
+        End Sub
 #End Region
 
     End Class
