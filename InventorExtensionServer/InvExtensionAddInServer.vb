@@ -1,5 +1,6 @@
 Imports Inventor
 Imports System.Runtime.InteropServices
+Imports System.Linq
 Imports Microsoft.Win32
 
 Namespace InventorExtensionServer
@@ -9,6 +10,7 @@ Namespace InventorExtensionServer
         Implements Inventor.ApplicationAddInServer
 
         Private WithEvents m_uiEvents As UserInterfaceEvents
+        Private WithEvents m_UserInputEvents As UserInputEvents
         Private WithEvents m_sampleButton As ButtonDefinition
 
 #Region "ApplicationAddInServer Members"
@@ -22,15 +24,20 @@ Namespace InventorExtensionServer
 
             ' Connect to the user-interface events to handle a ribbon reset.
             m_uiEvents = g_inventorApplication.UserInterfaceManager.UserInterfaceEvents
+            m_UserInputEvents = g_inventorApplication.CommandManager.UserInputEvents
+
+            AddHandler m_UserInputEvents.OnLinearMarkingMenu, AddressOf OnLinearMarkingMenu
 
             ' TODO: Add button definitions.
 
             ' Sample to illustrate creating a button definition.
-            Dim largeIcon As stdole.IPictureDisp = PictureDispConverter.ToIPictureDisp(My.Resources.IconLarge)
-            Dim smallIcon As stdole.IPictureDisp = PictureDispConverter.ToIPictureDisp(My.Resources.IconSmall)
+            Dim largeIconImg As Drawing.Icon = New Drawing.Icon(My.Resources.IconLarge, 48, 48)
+            Dim largeIcon As stdole.IPictureDisp = PictureDispConverter.ToIPictureDisp(largeIconImg)
+            Dim smallIconImg As System.Drawing.Icon = New Drawing.Icon(My.Resources.IconSmall, 16, 16)
+            Dim smallIcon As stdole.IPictureDisp = PictureDispConverter.ToIPictureDisp(smallIconImg)
             Dim controlDefs As Inventor.ControlDefinitions = g_inventorApplication.CommandManager.ControlDefinitions
             m_sampleButton = controlDefs.AddButtonDefinition("Command Name",
-                                                             "Internal Name",
+                                                             My.Settings.ButtonInternalNameTrollfaceProblem,
                                                              CommandTypesEnum.kShapeEditCmdType,
                                                              AddInClientID,
                                                              "This is a basic Hello World command!",
@@ -50,6 +57,122 @@ Namespace InventorExtensionServer
                 AddToUserInterface()
             End If
         End Sub
+
+        ''' <summary>
+        ''' This method adds the button to the relevant menu in Part, Assembly, Drawing And Presentation environments. For reasons that remain unclear however,
+        ''' right-clicking the top level icon in a drawing or Presentation fires a different non-UserInputEvents-capturable menu. The command in this case gets added to the 
+        ''' right-click menu of the first node underneath the top one.
+        ''' </summary>
+        ''' <param name="SelectedEntities"></param>
+        ''' <param name="SelectionDevice"></param>
+        ''' <param name="LinearMenu"></param>
+        ''' <param name="AdditionalInfo"></param>
+        Private Sub OnLinearMarkingMenu(SelectedEntities As ObjectsEnumerator, SelectionDevice As SelectionDeviceEnum, LinearMenu As CommandControls, AdditionalInfo As NameValueMap)
+            'Iterate each controls in linear menu
+            Dim buttonadded As Boolean = False
+            Dim ctrlToDelete As CommandControl = (From ctrl As CommandControl In LinearMenu
+                                                  Where ctrl.InternalName = My.Settings.ButtonInternalNameTrollfaceProblem
+                                                  Select ctrl).FirstOrDefault()
+            If Not ctrlToDelete Is Nothing Then
+                ctrlToDelete.Delete()
+            End If
+
+            For Each ctrl As CommandControl In LinearMenu
+                If (ctrl.InternalName = "AppDeleteCmd") Then
+                    If SketchBlockOrSketchBlocksSelected(SelectedEntities) Then
+                        If Not buttonadded Then
+                            LinearMenu.AddButton(m_sampleButton,
+                                             False,
+                                             True,
+                                             ctrl.InternalName,
+                                             True)
+                        End If
+                        LinearMenu.AddSeparator(ctrl.InternalName, True)
+                        buttonadded = True
+                    End If
+
+                End If
+
+                'Inserts new button and separator in the linear menu
+                ' going to add our control after the "MOVE EOP COMMAND"
+                If (ctrl.InternalName = "PartMoveEOPMarkerCmd") Then
+                    If Not buttonadded Then
+                        LinearMenu.AddButton(m_sampleButton,
+                                             False,
+                                             True,
+                                             ctrl.InternalName,
+                                             True)
+
+                        LinearMenu.AddSeparator(ctrl.InternalName, True)
+                        buttonadded = True
+                    End If
+                End If
+                If (ctrl.InternalName = "AppHowToCmd") Then
+                    If Not buttonadded Then
+                        LinearMenu.AddButton(m_sampleButton,
+                                                False,
+                                                True,
+                                                ctrl.InternalName,
+                                                True)
+                        buttonadded = True
+                    End If
+                End If
+
+                If ctrl.InternalName = "UCxCreateDrawingViewCmd" Then
+                    If Not buttonadded Then
+                        LinearMenu.AddSeparator(ctrl.InternalName, False)
+                        LinearMenu.AddButton(m_sampleButton,
+                                             False,
+                                             True,
+                                             ctrl.InternalName,
+                                             False)
+                        buttonadded = True
+                    End If
+                End If
+            Next
+
+        End Sub
+
+        ''' <summary>
+        ''' Determines on the fly whether we have a BrowserFolder selected.
+        ''' </summary>
+        ''' <param name="selectedEntities"></param>
+        ''' <returns></returns>
+        Private Function IsPartBrowserFolder(selectedEntities As ObjectsEnumerator) As Boolean
+            For Each entity As Object In selectedEntities
+                'Dim folder As BrowserFolder = Nothing
+                Dim folder As BrowserFolder = TryCast(entity, BrowserFolder)
+                'Dim folder As BrowserFolder = entity
+                If Not folder Is Nothing Then
+                    'If Not TypeOf entity Is BrowserFolder Then
+                    Return True
+                    Exit Function
+                Else
+                    Return False
+                    Exit Function
+                End If
+            Next
+        End Function
+
+        ''' <summary>
+        ''' Determines on the fly whether we have a sketch block or sketch blocks collection selected in the browser.
+        ''' </summary>
+        ''' <param name="selectedEntities"></param>
+        ''' <returns></returns>
+        Private Function SketchBlockOrSketchBlocksSelected(selectedEntities As ObjectsEnumerator) As Boolean
+            For Each entity As Object In selectedEntities
+                Dim sketchblockentity As SketchBlockDefinition = TryCast(entity, SketchBlockDefinition)
+                'Dim folder As BrowserFolder = entity
+                If Not sketchblockentity Is Nothing Then
+                    'If Not TypeOf entity Is BrowserFolder Then
+                    Return True
+                    Exit Function
+                Else
+                    Return False
+                    Exit Function
+                End If
+            Next
+        End Function
 
         ' This method is called by Inventor when the AddIn is unloaded. The AddIn will be
         ' unloaded either manually by the user or when the Inventor session is terminated.
